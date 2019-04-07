@@ -1,0 +1,13 @@
+[package]
+name = "counted-skiplist"
+version = "0.1.0"
+authors = ["jeremysalwen"]
+edition = "2018"
+
+[dependencies]
+alga = "0.7.2"
+alga_derive = "0.7.1"
+rand = "0.4"
+num-traits = "0.2.6"
+
+[dev-dependencies]
