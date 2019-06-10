@@ -27,7 +27,7 @@
 //! This implementation actually allows the value associated with each element to depend on the
 //! element to its right (this comes from the TSP use case, where the element is a city, and the
 //! derived value is the distance to the next city.)  This implementation is designed to work 
-//! even with noncommutative "sums" (i.e. it will work with any [Monoid](https://en.wikipedia.org/wiki/Monoid))
+//! even with noncommutative "sums" (i.e. it will work with any [Group](https://en.wikipedia.org/wiki/Group_(mathematics))
 //! 
 //! This implementation also supports custom allocators.
 
@@ -188,8 +188,8 @@ unsafe fn swap_link<T, S: AdditiveGroup + Copy>(
 /// Additionally the *counted* skip list has a value associated with every element, and provides
 /// `O(Log N)` time lookup of the sums of those values across any given range.  This implementation
 /// supports associated values which can be derived from an element and it's right-neighbor,
-/// and supports summing any values with a `Monoid` structure (i.e. they have a 0 element, and can
-/// be added together, not necessarily commutatively).
+/// and supports summing any values with a `Group` structure (i.e. they have a 0 element, can be 
+/// added together (not neccessarily commutatively), and have an inverse).
 /// 
 ///
 /// # Examples
@@ -231,11 +231,11 @@ impl<T> CountedSkipList<T, DefaultGroup, group_util::DefaultExtractor<DefaultGro
     /// ```
     /// use counted_skiplist::CountedSkipList;
     ///
-    /// let list: CountedSkipList<u32, i32, _> = CountedSkipList::new_with_monoid(|&x, &_y| x as i32);
+    /// let list: CountedSkipList<u32, i32, _> = CountedSkipList::new_with_group(|&x, &_y| x as i32);
     /// ```
 
     pub fn new() -> Self {
-        Self::new_with_monoid(group_util::DefaultExtractor::<DefaultGroup>::new())
+        Self::new_with_group(group_util::DefaultExtractor::<DefaultGroup>::new())
     }
 }
 
@@ -250,8 +250,8 @@ impl<T, S: AdditiveGroup + Copy, F: Fn(&T, &T) -> S + Copy> CountedSkipList<T, S
     ///
     /// let list: CountedSkipList<u32> = CountedSkipList::new();
     /// ```
-    pub fn new_with_monoid(key_func: F) -> Self {
-        Self::new_with_monoid_in(key_func, Global {})
+    pub fn new_with_group(key_func: F) -> Self {
+        Self::new_with_group_in(key_func, Global {})
     }
 }
 impl<T, S: AdditiveGroup + Copy, F: Fn(&T, &T) -> S + Copy, A: Alloc> CountedSkipList<T, S, F, A> {
@@ -263,10 +263,10 @@ impl<T, S: AdditiveGroup + Copy, F: Fn(&T, &T) -> S + Copy, A: Alloc> CountedSki
     /// use counted_skiplist::CountedSkipList;
     ///
     /// let alloc = std::alloc::System {};
-    /// let mut list = CountedSkipList::new_with_monoid_in(|&a, &b| 0, alloc);
+    /// let mut list = CountedSkipList::new_with_group_in(|&a, &b| 0, alloc);
     /// list.push_back(5);
     /// ```
-    pub fn new_with_monoid_in(key_func: F, mut alloc: A) -> Self {
+    pub fn new_with_group_in(key_func: F, mut alloc: A) -> Self {
         CountedSkipList {
             head: unsafe { Node::allocate(MAX_HEIGHT + 1, &mut alloc) },
             len: 0,
@@ -490,7 +490,7 @@ impl<T, S: AdditiveGroup + Copy, F: Fn(&T, &T) -> S + Copy, A: Alloc> CountedSki
         alloc: B,
     ) -> CountedSkipList<T, S, F, B> {
         let mut curr_node = finger.0;
-        let mut newlist = CountedSkipList::<T, S, F, B>::new_with_monoid_in(self.key_func, alloc);
+        let mut newlist = CountedSkipList::<T, S, F, B>::new_with_group_in(self.key_func, alloc);
         let mut distance_from_end = 1;
         let mut sum_from_end = (self.key_func)(&(*curr_node).value, &(*curr_node).value);
         for height in 0..=MAX_HEIGHT {
@@ -1504,7 +1504,7 @@ impl<T: Debug + Clone + Default, S: AdditiveGroup + Copy + Debug, F: Fn(&T, &T) 
 
     #[test]
     fn test_finger_difference() {
-        let mut m = CountedSkipList::new_with_monoid(|&x, &_y| x as i32);
+        let mut m = CountedSkipList::new_with_group(|&x, &_y| x as i32);
         m.insert(0, 1);
         let finger1 = m.insert(1, 2);
         m.insert(2, 3);
@@ -1518,7 +1518,7 @@ impl<T: Debug + Clone + Default, S: AdditiveGroup + Copy + Debug, F: Fn(&T, &T) 
 
     #[test]
     fn test_subsum() {
-        let mut list = CountedSkipList::new_with_monoid(|&x, &_y| x as i32);
+        let mut list = CountedSkipList::new_with_group(|&x, &_y| x as i32);
          list.push_back(1);
         let finger1 = list.push_back(2);
         list.push_back(3);
@@ -1532,7 +1532,7 @@ impl<T: Debug + Clone + Default, S: AdditiveGroup + Copy + Debug, F: Fn(&T, &T) 
 
     #[test]
     fn test_subsum_backwards() {
-        let mut m  = CountedSkipList::new_with_monoid(|&x, &_y| x as i32);
+        let mut m  = CountedSkipList::new_with_group(|&x, &_y| x as i32);
         let finger1 = m.insert(0, 1);
         let finger2 = m.insert(1, 2);
         check_valid(&m);

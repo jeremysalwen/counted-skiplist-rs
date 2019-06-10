@@ -28,8 +28,8 @@ fn fuzztest(data: &[u8]) -> Result<(), <arbitrary::FiniteBuffer<'_> as Unstructu
     let _ = env_logger::try_init();
     let mut buff = FiniteBuffer::new(data, 4048).unwrap();
     let closure = |&x: &_, &_y: &_| x as i32;
-    let mut list = TspList::new_with_monoid(closure);
-    let mut list2 = TspList::new_with_monoid(closure);
+    let mut list = TspList::new_with_group(closure);
+    let mut list2 = TspList::new_with_group(closure);
     let mut model = Vec::<u8>::new();
     let mut model2 = Vec::<u8>::new();
     let mut finger1 :Option<Finger<u8>> = None;
@@ -120,7 +120,7 @@ fn fuzztest(data: &[u8]) -> Result<(), <arbitrary::FiniteBuffer<'_> as Unstructu
             }
             4 => {
                 debug!("append");
-                list = list + std::mem::replace(&mut list2, TspList::new_with_monoid(closure));
+                list = list + std::mem::replace(&mut list2, TspList::new_with_group(closure));
                 model.append(&mut model2);
             }
             5 => {

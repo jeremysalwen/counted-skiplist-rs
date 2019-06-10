@@ -13,9 +13,9 @@
 // limitations under the License.
 
 //! This module contains an implementation of the Trivial Group, and
-//! an "extractor" function for using it as the monoid associated with the
-//! Counted Skiplist.  Using the Trivial Group as the associated monoid
-//! is functionally the same as having *no* associated monoid, so it serves
+//! an "extractor" function for using it as the group associated with the
+//! Counted Skiplist.  Using the Trivial Group as the associated group
+//! is functionally the same as having *no* associated group, so it serves
 //! as a good default.
 
 use alga::general::{AbstractMagma, Additive, AdditiveGroup, Identity, Inverse};
